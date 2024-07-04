@@ -1,10 +1,15 @@
 package com.enigmacamp.tokonyadia.controller;
 
+import com.enigmacamp.tokonyadia.dto.request.CustomerRequest;
+import com.enigmacamp.tokonyadia.dto.request.CustomerResponse;
 import com.enigmacamp.tokonyadia.entity.Customer;
 import com.enigmacamp.tokonyadia.service.CustomerService;
+import com.enigmacamp.tokonyadia.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.http.HttpResponse;
 import java.util.List;
 
 @RestController
@@ -23,8 +28,9 @@ public class CustomerController {
     }
 
     @PostMapping
-    public Customer createCustomer(@RequestBody Customer customer) {
-        return customerService.saveCustomer(customer);
+    public ResponseEntity<CustomerResponse> createCustomer(@RequestBody CustomerRequest customer) {
+        CustomerResponse createdCustomer = customerService.saveCustomer(customer);
+        return ResponseEntity.ok(createdCustomer);
     }
 
 
@@ -41,14 +47,14 @@ public class CustomerController {
 
     // Find by id
     @GetMapping("/{id}")
-    public Customer getCustomer(@PathVariable int id) {
+    public Customer getCustomer(@PathVariable String id) {
         return customerService.getCustomerById(id);
     }
 
 
     // Delete by ID
     @DeleteMapping("/{id}")
-    public boolean deleteCustomer(@PathVariable int id) {
+    public boolean deleteCustomer(@PathVariable String id) {
         return customerService.deleteCustomerById(id);
     }
 }

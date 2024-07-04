@@ -25,8 +25,8 @@ public class ProductController {
     }
 
     @GetMapping
-    public List<Product> getProduct() {
-        return productService.getAllProducts();
+    public List<Product> getProduct(@RequestParam(name = "name", required = false) String name) {
+        return productService.getAllProducts(name);
     }
 
     // UPDATE PUT and PATCH
@@ -42,14 +42,14 @@ public class ProductController {
 
     // Find by id
     @GetMapping("/{id}")
-    public Product getProduct(@PathVariable int id) {
+    public Product getProductById(@PathVariable String id) {
         return productService.getProductById(id);
     }
 
 
     // Delete by ID
     @DeleteMapping("/{id}")
-    public boolean deleteProduct(@PathVariable int id) {
+    public boolean deleteProduct(@PathVariable String id) {
         return productService.deleteProductById(id);
     }
 

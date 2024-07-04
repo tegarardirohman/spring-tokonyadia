@@ -1,80 +1,82 @@
 package com.enigmacamp.tokonyadia.service.impl;
 
+import com.enigmacamp.tokonyadia.dto.request.CustomerRequest;
+import com.enigmacamp.tokonyadia.dto.request.CustomerResponse;
 import com.enigmacamp.tokonyadia.entity.Customer;
+import com.enigmacamp.tokonyadia.repository.CustomerRepository;
+import com.enigmacamp.tokonyadia.repository.ProductRepository;
 import com.enigmacamp.tokonyadia.service.CustomerService;
+import com.enigmacamp.tokonyadia.service.ProductService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
-    List<Customer> customers = new ArrayList<>();
+    private final CustomerRepository customerRepository;
 
+    public CustomerServiceImpl(CustomerRepository customerRepository) {
+        this.customerRepository = customerRepository;
+    }
 
     @Override
-    public Customer saveCustomer(Customer customer) {
-        customers.add(customer);
-        return customer;
+    public CustomerResponse saveCustomer(CustomerRequest request) {
+        Customer customer = new Customer();
+        customer.setFullName(request.getName());
+        customer.setPhone(request.getPhoneNumber());
+        customer.setAddress(request.getAddress());
+        customer.setBirthDate(request.getBirthDate());
+
+        // save customer
+        customer = customerRepository.saveAndFlush(customer);
+
+        CustomerResponse response = new CustomerResponse();
+        response.setName(customer.getFullName());
+        response.setPhoneNumber(customer.getPhone());
+        response.setAddress(customer.getAddress());
+
+        return response;
     }
 
     @Override
     public List<Customer> getAllCustomers() {
-        return customers;
+        if (customerRepository.findAll().isEmpty()) {
+            return null;
+        } else {
+            return customerRepository.findAll();
+        }
     }
 
     @Override
-    public Customer getCustomerById(int id) {
-        return customers.stream().filter(c -> c.getId() == id).findFirst().orElse(null);
+    public Customer getCustomerById(String id) {
+        return customerRepository.findById(id).orElse(null);
     }
 
     @Override
     public Customer putUpdateCustomer(Customer customer) {
-        Customer existingCustomer = customers.stream().filter(c -> c.getId() == customer.getId()).findFirst().orElse(null);
-
-        if (existingCustomer != null) {
-            existingCustomer.setFullName(customer.getFullName());
-            existingCustomer.setAddress(customer.getAddress());
-            existingCustomer.setPhone(customer.getPhone());
-            existingCustomer.setBirthDate(customer.getBirthDate());
-
-            return existingCustomer;
-        } else {
-            return null;
-        }
-
+        return customerRepository.saveAndFlush(customer);
     }
 
     @Override
     public Customer patchUpdateCustomer(Customer customer) {
-        Customer existingCustomer = customers.stream().filter(c -> c.getId() == customer.getId()).findFirst().orElse(null);
-
-        if (existingCustomer != null) {
-            if (customer.getFullName() != null) {
-                existingCustomer.setFullName(customer.getFullName());
-            }
-            if (customer.getAddress() != null) {
-                existingCustomer.setAddress(customer.getAddress());
-            }
-            if (customer.getPhone() != null) {
-                existingCustomer.setPhone(customer.getPhone());
-            }
-            if (customer.getBirthDate() != null) {
-                existingCustomer.setBirthDate(customer.getBirthDate());
-            }
-
-            // Save the updated customer
-            return existingCustomer;
-        } else {
-            return null;
-        }
+        return null;
     }
 
     @Override
-    public boolean deleteCustomerById(int id) {
-        if(customers.removeIf(customer -> customer.getId() == id)) {
+    public boolean deleteCustomerById(String id) {
+        try {
+            customerRepository.deleteById(id);
+
             return true;
+        } catch (EmptyResultDataAccessException e) {
+            return false;
         }
-        return false;
     }
 }
