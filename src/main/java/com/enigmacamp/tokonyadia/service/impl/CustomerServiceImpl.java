@@ -1,82 +1,89 @@
 package com.enigmacamp.tokonyadia.service.impl;
 
-import com.enigmacamp.tokonyadia.dto.request.CustomerRequest;
-import com.enigmacamp.tokonyadia.dto.request.CustomerResponse;
-import com.enigmacamp.tokonyadia.entity.Customer;
+import com.enigmacamp.tokonyadia.model.dto.request.CustomerRequest;
+import com.enigmacamp.tokonyadia.model.dto.response.CustomerResponse;
+import com.enigmacamp.tokonyadia.model.entity.Customer;
 import com.enigmacamp.tokonyadia.repository.CustomerRepository;
-import com.enigmacamp.tokonyadia.repository.ProductRepository;
 import com.enigmacamp.tokonyadia.service.CustomerService;
-import com.enigmacamp.tokonyadia.service.ProductService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Repository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository customerRepository;
 
-    public CustomerServiceImpl(CustomerRepository customerRepository) {
-        this.customerRepository = customerRepository;
-    }
-
     @Override
-    public CustomerResponse saveCustomer(CustomerRequest request) {
-        Customer customer = new Customer();
-        customer.setFullName(request.getName());
-        customer.setPhone(request.getPhoneNumber());
+    public CustomerResponse createCustomer(CustomerRequest request) {
+        // Create entitas baru daru customerRequest
+        Customer customer =  new Customer();
+        customer.setName(request.getName());
+        customer.setPhoneNumber(request.getPhoneNumber());
         customer.setAddress(request.getAddress());
         customer.setBirthDate(request.getBirthDate());
 
-        // save customer
+        // Save customer
         customer = customerRepository.saveAndFlush(customer);
-
-        CustomerResponse response = new CustomerResponse();
-        response.setName(customer.getFullName());
-        response.setPhoneNumber(customer.getPhone());
-        response.setAddress(customer.getAddress());
-
-        return response;
+        return convertToCustomerResponse(customer);
     }
 
     @Override
-    public List<Customer> getAllCustomers() {
-        if (customerRepository.findAll().isEmpty()) {
-            return null;
-        } else {
-            return customerRepository.findAll();
-        }
+    public CustomerResponse updateCustomer(CustomerRequest request) {
+        findByidOrThrowNotFound(request.getId());
+        Customer customer = customerRepository.saveAndFlush(
+                Customer.builder()
+                        .id(request.getId())
+                        .name(request.getName())
+                        .phoneNumber(request.getPhoneNumber())
+                        .birthDate(request.getBirthDate())
+                        .address(request.getAddress()).build()
+        );
+        return convertToCustomerResponse(customer);
     }
 
     @Override
-    public Customer getCustomerById(String id) {
-        return customerRepository.findById(id).orElse(null);
+    public void deleteCustomer(String id) {
+        Customer customer = findByidOrThrowNotFound(id);
+        customerRepository.delete(customer);
+    }
+
+
+    @Override
+    public CustomerResponse getCustomerById(String id) {
+        Customer customer = findByidOrThrowNotFound(id);
+        return convertToCustomerResponse(customer);
     }
 
     @Override
-    public Customer putUpdateCustomer(Customer customer) {
-        return customerRepository.saveAndFlush(customer);
+    public List<CustomerResponse> getAllCustomer() {
+        return customerRepository.findAll().stream().map(this::convertToCustomerResponse).toList();
     }
 
     @Override
-    public Customer patchUpdateCustomer(Customer customer) {
-        return null;
+    public Customer getById(String id) {
+        return findByidOrThrowNotFound(id);
     }
 
-    @Override
-    public boolean deleteCustomerById(String id) {
-        try {
-            customerRepository.deleteById(id);
+    private Customer findByidOrThrowNotFound(String id){
+        return customerRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Data not found"));
+    }
 
-            return true;
-        } catch (EmptyResultDataAccessException e) {
-            return false;
-        }
+    private CustomerResponse convertToCustomerResponse(Customer customer) {
+        return CustomerResponse.builder()
+                .id(customer.getId())
+                .name(customer.getName())
+                .phoneNumber(customer.getPhoneNumber())
+                .birthDate(customer.getBirthDate())
+                .address(customer.getAddress())
+                .build();
     }
 }
+
+// semua Response mengguna dto Response
+// menambah new ResponseStatusException() -> return Response HTTP bawaan spring, namun jika ingin custom, perlu handling menggunakan global error (RestControllerAdvice)
+// menambahkan method untuk convert ke dto response, sehingga bisa digunakan oleh method lain
+

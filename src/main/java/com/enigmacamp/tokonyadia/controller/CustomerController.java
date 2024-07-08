@@ -1,60 +1,49 @@
 package com.enigmacamp.tokonyadia.controller;
 
-import com.enigmacamp.tokonyadia.dto.request.CustomerRequest;
-import com.enigmacamp.tokonyadia.dto.request.CustomerResponse;
-import com.enigmacamp.tokonyadia.entity.Customer;
+import com.enigmacamp.tokonyadia.constant.APIUrl;
+import com.enigmacamp.tokonyadia.model.dto.request.CustomerRequest;
+import com.enigmacamp.tokonyadia.model.dto.response.CustomerResponse;
 import com.enigmacamp.tokonyadia.service.CustomerService;
-import com.enigmacamp.tokonyadia.service.ProductService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.http.HttpResponse;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/customer")
+@RequiredArgsConstructor
+@RequestMapping(path = APIUrl.CUSTOMER_API)
 public class CustomerController {
-    CustomerService customerService;
-
-    @Autowired
-    public CustomerController(CustomerService customerService) {
-        this.customerService = customerService;
-    }
-
-    @GetMapping
-    public List<Customer> getCustomers() {
-        return customerService.getAllCustomers();
-    }
+    private final CustomerService customerService;
 
     @PostMapping
-    public ResponseEntity<CustomerResponse> createCustomer(@RequestBody CustomerRequest customer) {
-        CustomerResponse createdCustomer = customerService.saveCustomer(customer);
+    public ResponseEntity<CustomerResponse> createCustomer(@Valid @RequestBody CustomerRequest request) {
+        CustomerResponse createdCustomer = customerService.createCustomer(request);
         return ResponseEntity.ok(createdCustomer);
     }
 
-
-    // UPDATE PUT and PATCH
-    @PutMapping("/update")
-    public Customer putProduct(@RequestBody Customer customer) {
-        return customerService.putUpdateCustomer(customer);
+    @PutMapping
+    public ResponseEntity<CustomerResponse> updateCustomer(@Valid @RequestBody CustomerRequest request) {
+        CustomerResponse createdCustomer = customerService.updateCustomer(request);
+        return ResponseEntity.ok(createdCustomer);
     }
 
-    @PatchMapping("/update")
-    public Customer patchProduct(@RequestBody Customer customer) {
-        return customerService.patchUpdateCustomer(customer);
-    }
-
-    // Find by id
-    @GetMapping("/{id}")
-    public Customer getCustomer(@PathVariable String id) {
-        return customerService.getCustomerById(id);
-    }
-
-
-    // Delete by ID
     @DeleteMapping("/{id}")
-    public boolean deleteCustomer(@PathVariable String id) {
-        return customerService.deleteCustomerById(id);
+    public ResponseEntity<String> deleteCustomer(@PathVariable String id) {
+        customerService.deleteCustomer(id);
+        // block jika terjadi exception pada line 35
+        return ResponseEntity.ok("Success Delete Customer By Id");
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<CustomerResponse> getCustomer(@PathVariable String id) {
+        CustomerResponse customerResponse = customerService.getCustomerById(id);
+        return ResponseEntity.ok(customerResponse);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<CustomerResponse>> getAllCustomer(){
+        return ResponseEntity.ok(customerService.getAllCustomer());
     }
 }
