@@ -1,23 +1,24 @@
 package com.enigmacamp.tokonyadia.model.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
 @Builder
-@Table(name = "m_customer")
-public class Customer {
-    // buat CRUD nya kaya product
+@Entity
+@Table(name = "m_admin")
+public class Admin {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
+
     @Column(name = "name")
     private String name;
     @Column(name = "phone_number")
@@ -28,8 +29,4 @@ public class Customer {
     private Date birthDate;
     @Column(name = "status")
     private boolean isDeleted = Boolean.FALSE;
-
-    @OneToOne
-    @JoinColumn(name = "user_id")
-    private User user;
 }

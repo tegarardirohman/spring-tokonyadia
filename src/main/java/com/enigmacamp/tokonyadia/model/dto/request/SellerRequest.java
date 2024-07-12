@@ -14,7 +14,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CustomerRequest {
+public class SellerRequest {
     private String id;
     @NotBlank(message = "Name is required")
     @Size(min = 5)

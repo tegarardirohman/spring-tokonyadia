@@ -1,20 +1,21 @@
 package com.enigmacamp.tokonyadia.service;
 
 import com.enigmacamp.tokonyadia.model.dto.request.ProductRequest;
+import com.enigmacamp.tokonyadia.model.dto.response.ProductResponse;
 import com.enigmacamp.tokonyadia.model.entity.Product;
 
 import java.util.List;
 
 public interface ProductService {
-    Product create(ProductRequest request);
+    ProductResponse create(ProductRequest request);
 
-    List<Product> getAll(String name);
+    List<ProductResponse> getAll(String name);
 
-    Product getById(String id);
+    ProductResponse getById(String id);
 
-    Product updatePut(ProductRequest request);
+    ProductResponse updatePut(ProductRequest request);
 
-    Product updatePatch(ProductRequest request);
+    ProductResponse updatePatch(ProductRequest request);
 
     void deleteById(String id);
     Product getProductById(String id);

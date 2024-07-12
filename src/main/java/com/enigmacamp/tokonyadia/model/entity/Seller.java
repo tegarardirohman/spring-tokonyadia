@@ -1,20 +1,21 @@
 package com.enigmacamp.tokonyadia.model.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
 @Builder
-@Table(name = "m_customer")
-public class Customer {
-    // buat CRUD nya kaya product
+@Entity
+@Table(name = "m_seller")
+public class Seller {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
@@ -30,6 +31,6 @@ public class Customer {
     private boolean isDeleted = Boolean.FALSE;
 
     @OneToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn
     private User user;
 }
