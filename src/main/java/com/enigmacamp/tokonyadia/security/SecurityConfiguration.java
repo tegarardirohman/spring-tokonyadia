@@ -1,14 +1,13 @@
 package com.enigmacamp.tokonyadia.security;
 
-import com.enigmacamp.tokonyadia.constant.APIUrl;
-import com.enigmacamp.tokonyadia.model.entity.Role;
+import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpMethod;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -16,18 +15,20 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.stereotype.Controller;
 
 
-@AllArgsConstructor
-@Controller
+//@AllArgsConstructor
 @EnableWebSecurity
+@Configuration
+@RequiredArgsConstructor
 public class SecurityConfiguration {
 
     private final AuthTokenFilter authTokenFilter;
+
 
     private static final String[] WHITE_LIST_URL = {
             "api/v1/auth/**"
@@ -39,7 +40,8 @@ public class SecurityConfiguration {
     };
 
     private static final String[] SELLER_WHITE_LIST = {
-            "api/v1/test/seller"
+            "api/v1/test/seller",
+            "api/v1/test/customer"
     };
 
     @Bean
@@ -59,14 +61,18 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(req -> req.requestMatchers(WHITE_LIST_URL)
-                        .permitAll()
+                .authorizeHttpRequests(req -> req.dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+                        .requestMatchers(WHITE_LIST_URL).permitAll()
                         .requestMatchers(CUSTOMER_WHITE_LIST).hasAuthority("CUSTOMER")
                         .requestMatchers(SELLER_WHITE_LIST).hasAuthority("SELLER")
                         .anyRequest()
                         .authenticated()
                 )
-                .addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(exception ->
+                        exception.accessDeniedHandler(accessDeniedHandler())
+                                .authenticationEntryPoint(authenticationEntryPoint())
+                );
 
         return http.build();
     }
@@ -74,7 +80,19 @@ public class SecurityConfiguration {
     @Bean
     public AccessDeniedHandler accessDeniedHandler() {
         return (request, response, accessDeniedException) -> {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied: " + accessDeniedException.getMessage());
+            response.setContentType("application/json");
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write("{\"code\":403,\"message\":\"Forbidden: " + accessDeniedException.getMessage() + "\"}");
+        };
+    }
+
+
+    @Bean
+    public AuthenticationEntryPoint authenticationEntryPoint() {
+        return (request, response, authException) -> {
+            response.setContentType("application/json");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("{\"code\":401,\"message\":\"Unauthorized: " + authException.getMessage() + "\"}");
         };
     }
 

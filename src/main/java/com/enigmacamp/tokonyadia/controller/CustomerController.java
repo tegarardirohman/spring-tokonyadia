@@ -2,20 +2,22 @@ package com.enigmacamp.tokonyadia.controller;
 
 import com.enigmacamp.tokonyadia.constant.APIUrl;
 import com.enigmacamp.tokonyadia.model.dto.request.CustomerRequest;
+import com.enigmacamp.tokonyadia.model.dto.response.CommonResponse;
 import com.enigmacamp.tokonyadia.model.dto.response.CustomerResponse;
 import com.enigmacamp.tokonyadia.model.dto.response.PageResponse;
 import com.enigmacamp.tokonyadia.service.CustomerService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
-import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,27 +25,36 @@ import java.util.List;
 public class CustomerController {
     private final CustomerService customerService;
 
-    @PostMapping
-    public ResponseEntity<CustomerResponse> createCustomer(@Valid @RequestBody CustomerRequest request) {
-        CustomerResponse createdCustomer = customerService.createCustomer(request);
-        return ResponseEntity.ok(createdCustomer);
-    }
+//    @PostMapping
+//    public ResponseEntity<CustomerResponse> createCustomer(@Valid @RequestBody CustomerRequest request) {
+//        CustomerResponse createdCustomer = customerService.createCustomer(request);
+//        return ResponseEntity.ok(createdCustomer);
+//    }
 
     @PutMapping
-    public ResponseEntity<CustomerResponse> updateCustomer(@Valid @RequestBody CustomerRequest request) {
+    public ResponseEntity<CommonResponse<CustomerResponse>> updateCustomer(@Validated @RequestBody CustomerRequest request) {
         CustomerResponse createdCustomer = customerService.updateCustomer(request);
-        return ResponseEntity.ok(createdCustomer);
+
+        CommonResponse<CustomerResponse> commonResponse = CommonResponse.<CustomerResponse>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Update Data Success")
+                .data(Optional.of(createdCustomer))
+                .build();
+
+        return ResponseEntity.ok(commonResponse);
+
+//        return ResponseEntity.ok(createdCustomer);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteCustomer(@PathVariable String id) {
+    public ResponseEntity<String> deleteCustomer(@Validated @PathVariable String id) {
         customerService.deleteCustomer(id);
         // block jika terjadi exception pada line 35
         return ResponseEntity.ok("Success Delete Customer By Id");
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CustomerResponse> getCustomer(@PathVariable String id) {
+    public ResponseEntity<CustomerResponse> getCustomer(@Validated @PathVariable String id) {
         CustomerResponse customerResponse = customerService.getCustomerById(id);
         return ResponseEntity.ok(customerResponse);
     }

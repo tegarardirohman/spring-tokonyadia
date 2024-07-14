@@ -19,6 +19,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.Map;
@@ -50,7 +51,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
         } catch (JWTVerificationException e) {
-            throw new AuthenticationException("Auth Error: " + e.getMessage());
+            System.out.println("Token is not valid");
+//            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid JWT token");
         }
 
         filterChain.doFilter(request, response);

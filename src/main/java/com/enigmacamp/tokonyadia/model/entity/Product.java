@@ -22,8 +22,4 @@ public class Product {
     private Integer stock;
 }
 
-// siapa yang beli
-// product apa yang dibeli
-// kapan dia membeli ?
-// jika product > 1, product mana saja yang dibeli
 

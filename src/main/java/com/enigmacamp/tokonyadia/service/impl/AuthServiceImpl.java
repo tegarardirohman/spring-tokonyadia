@@ -14,17 +14,28 @@ import com.enigmacamp.tokonyadia.repository.UserRepository;
 import com.enigmacamp.tokonyadia.security.JwtUtil;
 import com.enigmacamp.tokonyadia.service.*;
 import com.enigmacamp.tokonyadia.utils.exceptions.ResourceNotFoundException;
+import com.enigmacamp.tokonyadia.utils.exceptions.ValidationException;
 import jakarta.transaction.Transactional;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
 
 @Service
 @RequiredArgsConstructor
@@ -33,14 +44,30 @@ public class AuthServiceImpl implements AuthenticationService {
     private final CustomerService customerService;
     private final SellerService sellerService;
     private final UserRepository userRepository;
-    private final UserService userService;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final Validator validator;
 
     @Override
     @Transactional
     public RegisterResponse registerCustomer(AuthRequest<CustomerRequest> request) {
+        Set<ConstraintViolation<AuthRequest<CustomerRequest>>> constraintViolations = validator.validate(request);
+        Set<ConstraintViolation<CustomerRequest>> dataConstraint = validator.validate(request.getData().get());
+
+        if (!constraintViolations.isEmpty()) {
+            throw new ConstraintViolationException(constraintViolations);
+        }
+
+        if (!dataConstraint.isEmpty()) {
+            throw new ConstraintViolationException(dataConstraint);
+        }
+
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already in use");
+        }
+
+
         Role role = roleService.getOrSave(Role.ERole.CUSTOMER);
         List<Role> roles = new ArrayList<>();
         roles.add(role);

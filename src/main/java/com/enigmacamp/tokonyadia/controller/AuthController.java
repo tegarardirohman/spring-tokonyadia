@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,7 +30,7 @@ public class AuthController {
     private final ConversionService conversionService;
 
     @PostMapping("/register/customer")
-    public ResponseEntity<CommonResponse<RegisterResponse>> registerCustumer(@RequestBody AuthRequest<CustomerRequest> request) {
+    public ResponseEntity<CommonResponse<RegisterResponse>> registerCustumer(@Validated @RequestBody AuthRequest<CustomerRequest> request) {
         RegisterResponse response = authenticationService.registerCustomer(request);
 
         CommonResponse<RegisterResponse> commonResponse = CommonResponse.<RegisterResponse>builder()
@@ -44,11 +45,11 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<CommonResponse<LoginResponse>> login(@RequestBody AuthRequest<String> request) {
+    public ResponseEntity<CommonResponse<LoginResponse>> login(@Validated @RequestBody AuthRequest<String> request) {
         LoginResponse response = authenticationService.login(request);
 
         CommonResponse<LoginResponse> commonResponse = CommonResponse.<LoginResponse>builder()
-                .statusCode(HttpStatus.CREATED.value())
+                .statusCode(HttpStatus.OK.value())
                 .message("Success Login")
                 .data(Optional.of(response))
                 .build();

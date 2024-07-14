@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -42,14 +43,17 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerResponse updateCustomer(CustomerRequest request) {
         findByidOrThrowNotFound(request.getId());
-        Customer customer = customerRepository.saveAndFlush(
-                Customer.builder()
-                        .id(request.getId())
-                        .name(request.getName())
-                        .phoneNumber(request.getPhoneNumber())
-                        .birthDate(request.getBirthDate())
-                        .address(request.getAddress()).build()
-        );
+
+        Customer customer = customerRepository.findById(request.getId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer Not Found"));
+
+
+        customer.setName(request.getName());
+        customer.setPhoneNumber(request.getPhoneNumber());
+        customer.setAddress(request.getAddress());
+        customer.setBirthDate(request.getBirthDate());
+        customer.setUser(request.getUser());
+        customer = customerRepository.saveAndFlush(customer);
+
         return convertToCustomerResponse(customer);
     }
 
