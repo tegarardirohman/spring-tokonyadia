@@ -90,7 +90,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .date(resultTransaction.getDate())
                 .transactionDetails(resultTransaction.getTransactionDetails())
                 .totalPayment(totalPayment.get())
-                .midtransResponse(midtransResponse)
+                    .midtransResponse(midtransResponse)
                 .build();
     }
 

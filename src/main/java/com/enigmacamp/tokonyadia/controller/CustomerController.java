@@ -40,7 +40,6 @@ import java.util.Optional;
 @SecurityRequirement(name = "Authorization")
 public class CustomerController {
     private final CustomerService customerService;
-    private final FileUploadService fileUploadService;
     private final FileStorageService fileStorageService;
 
 //    @PostMapping
