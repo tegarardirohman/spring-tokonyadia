@@ -31,17 +31,24 @@ public class SecurityConfiguration {
 
 
     private static final String[] WHITE_LIST_URL = {
-            "api/v1/auth/**"
+            "api/v1/auth/**",
+            "/v3/api-docs/**",
+            "/swagger-resources/**",
+            "/swagger-ui/**",
+            "api/v1/customer/images/**"
+//            "/api/v1/transaction"
     };
 
     private static final String[] CUSTOMER_WHITE_LIST = {
-            "api/v1/test/customer",
-            "api/v1/product"
+            "/api/v1/test/customer",
+            "/api/v1/customer/**",
+            "/api/v1/transaction"
     };
 
     private static final String[] SELLER_WHITE_LIST = {
-            "api/v1/test/seller",
-            "api/v1/test/customer"
+            "/api/v1/product",
+            "/api/v1/test/customer",
+            "/api/v1/transaction"
     };
 
     @Bean
@@ -53,6 +60,7 @@ public class SecurityConfiguration {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
+
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {

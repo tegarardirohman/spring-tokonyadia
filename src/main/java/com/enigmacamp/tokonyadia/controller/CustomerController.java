@@ -2,10 +2,16 @@ package com.enigmacamp.tokonyadia.controller;
 
 import com.enigmacamp.tokonyadia.constant.APIUrl;
 import com.enigmacamp.tokonyadia.model.dto.request.CustomerRequest;
+import com.enigmacamp.tokonyadia.model.dto.response.AvatarResponse;
 import com.enigmacamp.tokonyadia.model.dto.response.CommonResponse;
 import com.enigmacamp.tokonyadia.model.dto.response.CustomerResponse;
 import com.enigmacamp.tokonyadia.model.dto.response.PageResponse;
 import com.enigmacamp.tokonyadia.service.CustomerService;
+import com.enigmacamp.tokonyadia.service.FileStorageService;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -15,15 +21,27 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.Date;
 import java.util.Optional;
 
+
+@SecurityScheme(
+        name = "Authorization",
+        type = SecuritySchemeType.HTTP,
+        bearerFormat = "JWT",
+        scheme = "bearer"
+)
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(path = APIUrl.CUSTOMER_API)
+@SecurityRequirement(name = "Authorization")
 public class CustomerController {
     private final CustomerService customerService;
+    private final FileUploadService fileUploadService;
+    private final FileStorageService fileStorageService;
 
 //    @PostMapping
 //    public ResponseEntity<CustomerResponse> createCustomer(@Valid @RequestBody CustomerRequest request) {
@@ -59,6 +77,13 @@ public class CustomerController {
         return ResponseEntity.ok(customerResponse);
     }
 
+    @GetMapping("/images/{img}")
+    public ResponseEntity<byte[]> getImage(@PathVariable String img) {
+
+        return fileStorageService.getImage(img);
+    }
+
+    @SecurityRequirement(name = "Authorization")
     @GetMapping
     public ResponseEntity<PageResponse<CustomerResponse>> getAllCustomer(
             @RequestParam(name = "page", defaultValue = "0") Integer page,
@@ -90,4 +115,30 @@ public class CustomerController {
 
         return ResponseEntity.ok(pageResponse);
     }
+
+    @PostMapping("/avatar")
+    public ResponseEntity<CommonResponse<AvatarResponse>> uploadAvatar(@RequestParam("avatar") MultipartFile avatar, HttpServletRequest request) {
+        String userId = (String) request.getAttribute("userId");
+        String fileName = fileStorageService.storeFile(avatar, userId);
+
+        String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path(APIUrl.CUSTOMER_API)
+                .path("/images/")
+                .path(fileName)
+                .toUriString();
+
+        AvatarResponse avatarResponse = AvatarResponse.builder()
+                .url(fileDownloadUri)
+                .name(fileName)
+                .build();
+
+        CommonResponse<AvatarResponse> commonResponse = CommonResponse.<AvatarResponse>builder()
+                .message("File uploaded successfully")
+                .statusCode(HttpStatus.CREATED.value())
+                .data(Optional.of(avatarResponse))
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(commonResponse);
+    }
+
 }

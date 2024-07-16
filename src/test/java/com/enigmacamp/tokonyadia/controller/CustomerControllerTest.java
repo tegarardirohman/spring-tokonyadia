@@ -159,14 +159,14 @@ class CustomerControllerTest {
     }
 
 
-
     @Test
-    void deleteCustomer() throws Exception {
+    void deleteCustomerSuccess() throws Exception {
 
     }
 
     @Test
-    void getCustomer() {
+    void getCustomerSucess() throws Exception {
+
     }
 
     @Test

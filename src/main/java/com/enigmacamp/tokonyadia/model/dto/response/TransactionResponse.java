@@ -20,4 +20,5 @@ public class TransactionResponse {
     private Date date;
     private List<TransactionDetail> transactionDetails;
     private Long totalPayment;
+    private MidtransResponse midtransResponse;
 }

@@ -49,6 +49,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource());
 
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
+                request.setAttribute("userId", userInfo.get("userId"));
             }
         } catch (JWTVerificationException e) {
             System.out.println("Token is not valid");
