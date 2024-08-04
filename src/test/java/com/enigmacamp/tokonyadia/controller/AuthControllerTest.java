@@ -135,6 +135,7 @@ class AuthControllerTest {
         ).andDo(result -> {
             CommonResponse<String> response = objectMapper.readValue(result.getResponse().getContentAsString(), CommonResponse.class);
 
+            System.out.println(response.toString());
             assertEquals(HttpStatus.OK.value(), response.getStatusCode());
         });
     }

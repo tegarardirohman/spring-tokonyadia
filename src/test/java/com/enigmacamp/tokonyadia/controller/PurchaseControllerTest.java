@@ -41,7 +41,7 @@ class PurchaseControllerTest {
         // ID
         String customerId = "5bc4585d-e1c2-4387-a0a4-93e4b43d347c";
         String productId = "7f7bfd62-dca9-4385-8abd-194a16b0bf85";
-        String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJcIlRva29ueWFkaWEgQXBwIFNob3BcIiIsInN1YiI6IjRjNzY1MmI0LTA4MGItNGE3Zi1iYzRkLTllM2VmNDFkOTc4NyIsImV4cCI6MTcyMTEyNDEyNywiaWF0IjoxNzIxMTIwNTI3LCJyb2xlIjoiQ1VTVE9NRVIifQ.aY8vkoYEddJhLimAP7tkEv4W4OZziLP2S6fG1ZOkm3s";
+        String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJcIlRva29ueWFkaWEgQXBwIFNob3BcIiIsInN1YiI6IjRjNzY1MmI0LTA4MGItNGE3Zi1iYzRkLTllM2VmNDFkOTc4NyIsImV4cCI6MTcyMTEzNDU3OCwiaWF0IjoxNzIxMTMwOTc4LCJyb2xlIjoiQ1VTVE9NRVIifQ.9lZbcYUN5Aqhg0BgZf8_FcD7v8iiiuJrpu_0xhu0FyU";
 
         // Transaction detail request
         TransactionDetailRequest transactionDetailRequest = TransactionDetailRequest.builder()
@@ -75,6 +75,8 @@ class PurchaseControllerTest {
 
             System.out.println("Token: " + transactionResponse.getMidtransResponse().getToken());
             System.out.println("Redirect_url: " + transactionResponse.getMidtransResponse().getRedirect_url());
+            System.out.println("Hasil: ");
+            System.out.println(transactionResponse.toString());
         });
 
     }
